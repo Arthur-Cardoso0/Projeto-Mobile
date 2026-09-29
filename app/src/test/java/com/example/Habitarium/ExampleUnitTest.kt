@@ -1,4 +1,4 @@
-package com.example.projeto
+package com.example.Habitarium
 
 import org.junit.Test
 
