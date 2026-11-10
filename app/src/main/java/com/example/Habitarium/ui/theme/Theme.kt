@@ -25,28 +25,44 @@ val NeutralMuted   = Color(0xFF9E9E9E)
 // ─── Esquemas de cor ─────────────────────────────────────────────────────────
 
 private val LightColors = lightColorScheme(
-    primary             = BrandGreen,
-    onPrimary           = Color.White,
-    primaryContainer    = BrandGreenLight,
-    onPrimaryContainer  = BrandGreenDark,
-    secondary           = BrandGreenMid,
-    surface             = Color.White,
-    onSurface           = Color(0xFF1C1C1C),
-    background          = NeutralSurface,
-    onBackground        = Color(0xFF1C1C1C),
-    outline             = NeutralBorder
+    primary                 = BrandGreen,
+    onPrimary               = Color.White,
+    primaryContainer        = BrandGreenLight,
+    onPrimaryContainer      = BrandGreenDark,
+    secondary               = BrandGreenMid,
+    secondaryContainer      = BrandGreenLight,
+    onSecondaryContainer    = BrandGreenDark,
+    surface                 = Color.White,
+    onSurface               = Color(0xFF1C1C1C),
+    surfaceVariant          = Color(0xFFF1F5F3),
+    onSurfaceVariant        = Color(0xFF5F6B66),
+    surfaceContainer        = Color.White,
+    surfaceContainerLow     = Color.White,
+    surfaceContainerHigh    = Color(0xFFF1F5F3),
+    surfaceContainerHighest = Color(0xFFE9EFEC),
+    background              = NeutralSurface,
+    onBackground            = Color(0xFF1C1C1C),
+    outline                 = NeutralBorder
 )
 
 private val DarkColors = darkColorScheme(
-    primary             = BrandGreenMid,
-    onPrimary           = BrandGreenDark,
-    primaryContainer    = BrandGreenDark,
-    onPrimaryContainer  = BrandGreenLight,
-    surface             = Color(0xFF1E1E1E),
-    onSurface           = Color(0xFFECECEC),
-    background          = Color(0xFF121212),
-    onBackground        = Color(0xFFECECEC),
-    outline             = Color(0xFF3A3A3A)
+    primary                 = BrandGreenMid,
+    onPrimary               = BrandGreenDark,
+    primaryContainer        = BrandGreenDark,
+    onPrimaryContainer      = BrandGreenLight,
+    secondaryContainer      = BrandGreenDark,
+    onSecondaryContainer    = BrandGreenLight,
+    surface                 = Color(0xFF1E1E1E),
+    onSurface               = Color(0xFFECECEC),
+    surfaceVariant          = Color(0xFF262B29),
+    onSurfaceVariant        = Color(0xFFB0B8B4),
+    surfaceContainer        = Color(0xFF1E1E1E),
+    surfaceContainerLow     = Color(0xFF1E1E1E),
+    surfaceContainerHigh    = Color(0xFF262B29),
+    surfaceContainerHighest = Color(0xFF2E3431),
+    background              = Color(0xFF121212),
+    onBackground            = Color(0xFFECECEC),
+    outline                 = Color(0xFF3A3A3A)
 )
 
 // ─── Tema principal ──────────────────────────────────────────────────────────
