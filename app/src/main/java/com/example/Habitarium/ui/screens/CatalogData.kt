@@ -19,11 +19,11 @@ fun currency(value: Double): String = NumberFormat.getCurrencyInstance(Locale.fo
 private fun String.searchKey() = Normalizer.normalize(trim(), Normalizer.Form.NFD)
     .replace("\\p{M}+".toRegex(), "").lowercase(Locale.ROOT)
 
-fun searchProducts(query: String, category: String, ascending: Boolean): List<Product> {
+fun searchProducts(query: String, category: String, ascending: Boolean, products: List<Product> = catalog): List<Product> {
     val terms = query.searchKey().split("\\s+".toRegex()).filter { it.isNotEmpty() }
-    val matches = catalog.filter { product ->
+    val matches = products.filter { product ->
         val text = "${product.name} ${product.company} ${product.brand}".searchKey()
-        (category == "Todos" || product.category == category) && terms.all { it in text }
+        (category == "Todos" || categoryGroupOf(product.category) == category) && terms.all { it in text }
     }
     return if (ascending) matches.sortedBy { it.price } else matches.sortedByDescending { it.price }
 }
