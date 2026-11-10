@@ -15,8 +15,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.Habitarium.ui.theme.*
+import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
+import coil.compose.AsyncImage
 
-private val compareAttributes = listOf("Espessura", "Área", "Instalação", "Estoque")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,7 +33,7 @@ fun CompareScreen(navController: NavController, state: CatalogState) {
                 title = { Text("Comparação") },
                 actions = {
                     AssistChip(
-                        onClick = { navController.navigate("search") },
+                        onClick = { navController.navigateToTab("search") },
                         label   = { Text("${products.size} produtos") },
                         colors  = AssistChipDefaults.assistChipColors(
                             containerColor = BrandGreenLight,
@@ -59,7 +62,7 @@ fun CompareScreen(navController: NavController, state: CatalogState) {
                     )
                     Spacer(Modifier.height(16.dp))
                     Button(
-                        onClick = { navController.navigate("search") },
+                        onClick = { navController.navigateToTab("search") },
                         colors  = ButtonDefaults.buttonColors(containerColor = BrandGreen)
                     ) {
                         Text("Ir para busca")
@@ -74,8 +77,10 @@ fun CompareScreen(navController: NavController, state: CatalogState) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     products.forEach { product ->
                         CompareProductHeader(
-                            name    = product.name,
+                            name = product.name,
                             company = product.company,
+                            brand = product.brand,
+                            imageUrl = product.imageUrl,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -107,11 +112,28 @@ fun CompareScreen(navController: NavController, state: CatalogState) {
                 }
             }
 
-            items(compareAttributes) { attr ->
-                CompareAttributeRow(label = attr) {
+            item {
+                CompareAttributeRow(label = "Marca") {
+                    products.forEach { p -> CompareCell(value = p.brand.ifBlank { "—" }) }
+                }
+            }
+            item {
+                CompareAttributeRow(label = "Instalação") {
                     products.forEach { p ->
-                        CompareCell(value = p.specs[attr] ?: "—")
+                        CompareCell(value = if (p.hasOwnInstallation) "Disponível" else "Não")
                     }
+                }
+            }
+            item {
+                CompareAttributeRow(label = "Estoque") {
+                    products.forEach { p ->
+                        CompareCell(value = if (p.stock > 0) "${p.stock} un." else "—")
+                    }
+                }
+            }
+            items(products.flatMap { it.specs.keys }.distinct()) { attr ->
+                CompareAttributeRow(label = specLabel(attr)) {
+                    products.forEach { p -> CompareCell(value = p.specs[attr] ?: "—") }
                 }
             }
 
@@ -125,13 +147,13 @@ fun CompareScreen(navController: NavController, state: CatalogState) {
                         val isPrimary = index == products.indices.last
                         if (isPrimary) {
                             Button(
-                                onClick  = { state.add(product); navController.navigate("budget") },
+                                onClick  = { state.add(product); navController.navigateToTab("budget") },
                                 modifier = Modifier.weight(1f),
                                 colors   = ButtonDefaults.buttonColors(containerColor = BrandGreen)
                             ) { Text("+ Orçamento", style = MaterialTheme.typography.labelSmall) }
                         } else {
                             OutlinedButton(
-                                onClick  = { state.add(product); navController.navigate("budget") },
+                                onClick  = { state.add(product); navController.navigateToTab("budget") },
                                 modifier = Modifier.weight(1f)
                             ) { Text("+ Orçamento", style = MaterialTheme.typography.labelSmall, color = BrandGreen) }
                         }
@@ -144,24 +166,51 @@ fun CompareScreen(navController: NavController, state: CatalogState) {
 }
 
 @Composable
-private fun CompareProductHeader(name: String, company: String, modifier: Modifier = Modifier) {
+private fun CompareProductHeader(
+    name: String,
+    company: String,
+    brand: String,
+    imageUrl: String?,
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier
             .border(0.5.dp, NeutralBorder)
             .padding(10.dp)
     ) {
-        // TODO: substituir por AsyncImage
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp)
+                .height(96.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(NeutralSurface),
-            contentAlignment = Alignment.Center
-        ) { Text("📦") }
+                .background(BrandGreenLight)
+        ) {
+            if (imageUrl != null) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = name,
+                    contentScale = ContentScale.Crop,
+                    placeholder = ColorPainter(BrandGreenLight),
+                    error = ColorPainter(BrandGreenLight),
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
         Spacer(Modifier.height(6.dp))
-        Text(name, style = MaterialTheme.typography.bodyMedium, maxLines = 2)
-        Text(company, style = MaterialTheme.typography.bodySmall, color = NeutralMuted)
+        Text(
+            text = name,
+            style = MaterialTheme.typography.bodyMedium,
+            minLines = 3,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            text = if (brand.isNotBlank()) brand else company,
+            style = MaterialTheme.typography.bodySmall,
+            color = NeutralMuted,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -191,4 +240,11 @@ private fun RowScope.CompareCell(value: String, highlight: Boolean = false) {
             color = if (highlight) BrandGreen else MaterialTheme.colorScheme.onSurface
         )
     }
+}
+
+private fun specLabel(key: String) = when (key) {
+    "unidadeMedida" -> "Unidade"
+    "codigoProduto" -> "Código"
+    "sistema" -> "Sistema"
+    else -> key.replaceFirstChar { it.uppercase() }
 }
