@@ -20,6 +20,10 @@ import android.content.ActivityNotFoundException
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 import com.example.Habitarium.ui.theme.*
+import android.os.Build
+import com.example.Habitarium.data.pdf.BudgetPdf
+import com.example.Habitarium.data.pdf.PdfLine
+import androidx.compose.material.icons.automirrored.outlined.Send
 
 
 private data class BudgetRowData(
@@ -35,7 +39,6 @@ private data class BudgetRowData(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BudgetScreen(navController: NavController, state: CatalogState) {
-    // Estado compartilhado e salvo localmente.
     val items = state.budgetProducts.map { BudgetRowData(it.id, it.name, it.company, state.quantity(it.id), it.price) }
     val context = LocalContext.current
     val shareBudget: () -> Unit = {
@@ -50,13 +53,33 @@ fun BudgetScreen(navController: NavController, state: CatalogState) {
             Toast.makeText(context, "Nenhum aplicativo disponível para compartilhar.", Toast.LENGTH_LONG).show()
         }
     }
+    val savePdf: () -> Unit = {
+        val lines = items.map { PdfLine(it.name, it.company, it.quantity, it.unitPrice) }
+        val uri = BudgetPdf.saveToDownloads(context, lines)
+        if (uri == null) {
+            Toast.makeText(context, "Não foi possível salvar o PDF.", Toast.LENGTH_LONG).show()
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            Toast.makeText(context, "PDF salvo na pasta Downloads.", Toast.LENGTH_LONG).show()
+            val view = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/pdf")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            try {
+                context.startActivity(view)
+            } catch (_: ActivityNotFoundException) {
+                // Sem aplicativo leitor de PDF: o arquivo continua salvo em Downloads.
+            }
+        } else {
+            Toast.makeText(context, "PDF salvo na pasta Documentos do aplicativo.", Toast.LENGTH_LONG).show()
+        }
+    }
 
     val materialsTotal = items.filter { !it.isService }.sumOf { it.unitPrice * it.quantity }
     val servicesTotal  = items.filter { it.isService  }.sumOf { it.unitPrice * it.quantity }
     val grandTotal     = materialsTotal + servicesTotal
 
     if (items.isEmpty()) {
-        BudgetEmptyState(onSearchClick = { navController.navigate("search") })
+        BudgetEmptyState(onSearchClick = { navController.navigateToTab("search") })
         return
     }
 
@@ -103,14 +126,31 @@ fun BudgetScreen(navController: NavController, state: CatalogState) {
         }
 
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Valores de demonstração. Escolha um aplicativo e destinatário para enviar a solicitação.", style = MaterialTheme.typography.bodySmall)
+            Text(
+                "Valores de demonstração. Escolha um aplicativo e destinatário para enviar a solicitação.",
+                style = MaterialTheme.typography.bodySmall
+            )
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick  = savePdf,
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape    = RoundedCornerShape(12.dp)
+            ) {
+                Icon(Icons.Outlined.PictureAsPdf, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Salvar em PDF", style = MaterialTheme.typography.titleMedium)
+            }
+
+            Spacer(Modifier.height(8.dp))
+
             Button(
                 onClick  = shareBudget,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 shape    = RoundedCornerShape(12.dp),
                 colors   = ButtonDefaults.buttonColors(containerColor = BrandGreen)
             ) {
-                Icon(Icons.Outlined.Send, contentDescription = null)
+                Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text("Enviar solicitação", style = MaterialTheme.typography.titleMedium)
             }
