@@ -7,9 +7,9 @@ data class Product(
     val id: String,
     val name: String,
     val price: Double,
-    val company: String,
+    val company: String = "",
     val category: String,
-    val brand: String,
+    val brand: String = "",
     val specs: Map<String, String> = emptyMap(), // ex: "Espessura" -> "10mm"
     val stock: Int = 0,
     val rating: Float = 0f,
