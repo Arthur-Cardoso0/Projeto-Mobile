@@ -1,6 +1,6 @@
 # Habitarium (Android)
 
-Aplicativo Android para consultar um catálogo de materiais de construção, comparar produtos e montar orçamentos. O catálogo e o login vêm da [Habitarium API](<url-do-repositorio-da-api>), e o orçamento pode ser compartilhado ou salvo em PDF.
+Aplicativo Android para consultar um catálogo de materiais de construção, comparar produtos e montar orçamentos. O catálogo e o login vêm da [Habitarium API](https://github.com/Arthur-Cardoso0/API-HABITARIUM), e o orçamento pode ser compartilhado ou salvo em PDF.
 
 ## Sumário
 
