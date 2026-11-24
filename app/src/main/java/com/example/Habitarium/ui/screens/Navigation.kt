@@ -34,13 +34,18 @@ fun NavController.navigateToTab(route: String) {
 }
 
 @Composable
-fun HabitariumNavHost(navController: NavHostController, state: CatalogState, modifier: Modifier = Modifier) {
+fun HabitariumNavHost(
+    navController: NavHostController,
+    state: CatalogState,
+    auth: AuthState,
+    modifier: Modifier = Modifier
+) {
     NavHost(navController = navController, modifier = modifier, startDestination = Screen.Home.route) {
         composable(Screen.Home.route)    { HomeScreen(navController, state) }
         composable(Screen.Search.route)  { SearchScreen(navController, state) }
         composable(Screen.Compare.route) { CompareScreen(navController, state) }
         composable(Screen.Budget.route)  { BudgetScreen(navController, state) }
-        composable(Screen.Account.route) { Column(Modifier.fillMaxSize().padding(24.dp)) { Text("Minha conta", style = MaterialTheme.typography.headlineMedium); Spacer(Modifier.height(16.dp)); Text("Você está usando o modo de demonstração. Seu orçamento é salvo neste aparelho. O acesso com conta ainda não está disponível.") } }
+        composable(Screen.Account.route) { AccountScreen(auth) }
     }
 }
 
