@@ -10,10 +10,10 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitInstance {
 
-    // Com "adb reverse tcp:5240 tcp:5240", o localhost do aparelho aponta para o PC.
-    private const val BASE_URL = "http://localhost:5240/api/"
+    // URL da API no Render mantendo o sufixo "/api/" utilizado pelas rotas do HabitariumApiService
+    private const val BASE_URL = "https://api-habitarium-biho.onrender.com/api/"
 
-    // Coloca "Authorization: Bearer <token>" em toda requisição, se houver login.
+    // Injeta "Authorization: Bearer <token>" em todas as requisições quando houver sessão ativa
     private val authInterceptor = Interceptor { chain ->
         val token = SessionManager.token
         val request = if (token != null) {
@@ -26,7 +26,7 @@ object RetrofitInstance {
         chain.proceed(request)
     }
 
-    // BASIC mostra só "--> POST url" e "<-- 200", sem expor senha nem token no Logcat.
+    // Registra apenas método, URL e status HTTP no Logcat, ocultando o cabeçalho Authorization
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BASIC
         redactHeader("Authorization")
@@ -35,8 +35,9 @@ object RetrofitInstance {
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)
         .addInterceptor(loggingInterceptor)
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(15, TimeUnit.SECONDS)
+        .connectTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
         .build()
 
     val api: HabitariumApiService by lazy {

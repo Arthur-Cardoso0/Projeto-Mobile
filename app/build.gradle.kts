@@ -33,6 +33,20 @@ android {
     buildFeatures {
         compose = true
     }
+    buildFeatures {
+        buildConfig = true
+    }
+
+    buildTypes {
+        debug {
+            // Aponta o build de desenvolvimento diretamente para o Render
+            buildConfigField("String", "BASE_URL", "\"https://api-habitarium-biho.onrender.com/\"")
+        }
+        release {
+            buildConfigField("String", "BASE_URL", "\"https://api-habitarium-biho.onrender.com/\"")
+            isMinifyEnabled = false
+        }
+    }
 }
 
 dependencies {
