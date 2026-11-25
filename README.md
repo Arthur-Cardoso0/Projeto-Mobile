@@ -1,6 +1,6 @@
 # Habitarium (Android)
 
-Aplicativo Android para consultar um catálogo de materiais de construção, comparar produtos e montar orçamentos. O catálogo e o login vêm da [Habitarium API](https://github.com/Arthur-Cardoso0/API-HABITARIUM), e o orçamento pode ser compartilhado ou salvo em PDF.
+Aplicativo Android para consultar um catálogo de materiais de construção, comparar produtos e montar orçamentos. O catálogo e o login vêm da [Habitarium API](https://github.com/Arthur-Cardoso0/API-HABITARIUM), publicada na nuvem, e o orçamento pode ser compartilhado ou salvo em PDF.
 
 ## Sumário
 
@@ -10,6 +10,7 @@ Aplicativo Android para consultar um catálogo de materiais de construção, com
 - [Estrutura do projeto](#estrutura-do-projeto)
 - [Pré-requisitos](#pré-requisitos)
 - [Como executar](#como-executar)
+- [Desenvolvendo com a API local](#desenvolvendo-com-a-api-local)
 - [Testes](#testes)
 - [Segurança](#segurança)
 - [Próximos passos](#próximos-passos)
@@ -59,11 +60,11 @@ O app tem uma única `Activity` e usa Compose com dois `ViewModel`s que guardam 
 Fluxo de dados:
 
 ```
-Telas (Compose)  →  AuthState / CatalogState  →  Retrofit (HabitariumApiService)  →  Habitarium API
+Telas (Compose)  →  AuthState / CatalogState  →  Retrofit (HabitariumApiService)  →  Habitarium API (Render)
                                                ↘  SessionManager (token no aparelho)
 ```
 
-O token JWT é enviado automaticamente em todas as requisições por um interceptor do OkHttp, e é lido do `SessionManager`.
+O token JWT é enviado automaticamente em todas as requisições por um interceptor do OkHttp, e é lido do `SessionManager`. Como a API usa um plano gratuito que hiberna, os tempos limite de conexão, leitura e escrita do cliente são de 60 segundos.
 
 ## Estrutura do projeto
 
@@ -84,26 +85,43 @@ app/src/main/java/com/example/Habitarium/
 ## Pré-requisitos
 
 - [Android Studio](https://developer.android.com/studio) recente, com suporte ao SDK 37
-- A **Habitarium API** rodando no computador (veja o README dela)
-- Emulador ou celular Android 7.0 ou superior
+- Emulador ou celular Android 7.0 ou superior, com acesso à internet
+
+Não é preciso rodar nada no computador: o app usa a API publicada.
 
 ## Como executar
 
-**1.** Suba a API no computador (porta `5240`).
+**1.** Clone o repositório:
 
-**2.** Abra a pasta do projeto no Android Studio e aguarde a sincronização do Gradle.
+```powershell
+git clone https://github.com/Arthur-Cardoso0/Projeto-Mobile.git
+```
 
-**3.** Conecte o emulador ou o celular com depuração USB ativada e faça o aparelho enxergar a API do computador:
+**2.** Abra a pasta no Android Studio e aguarde a sincronização do Gradle.
+
+**3.** Escolha o emulador ou o celular (com depuração USB ativada) e clique em **Run**.
+
+**4.** Crie uma conta na tela inicial e entre.
+
+A API fica em `https://api-habitarium-biho.onrender.com/api/`. Se ela estiver hibernando, a primeira tela pode demorar cerca de um minuto para carregar o catálogo. É só aguardar ou tocar em **Tentar novamente**.
+
+## Desenvolvendo com a API local
+
+Para testar contra uma API rodando no seu computador:
+
+**1.** Suba a API local seguindo o README dela (porta `5240`).
+
+**2.** Faça o aparelho enxergar o computador:
 
 ```powershell
 & "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" reverse tcp:5240 tcp:5240
 ```
 
-O app acessa `http://localhost:5240/api/`, que com o `adb reverse` aponta para o computador. O comando precisa ser repetido quando o emulador reinicia ou o cabo é reconectado.
+**3.** Em `data/network/RetrofitInstance.kt`, troque `BASE_URL` por `http://localhost:5240/api/`.
 
-**4.** Clique em **Run**, crie uma conta na tela inicial e entre.
+**4.** Como a API local usa HTTP, habilite temporariamente `android:usesCleartextTraffic="true"` na tag `<application>` do `AndroidManifest.xml`. Não envie essa alteração junto com a versão publicada.
 
-Para usar outro endereço (por exemplo, uma API publicada na nuvem), altere `BASE_URL` em `data/network/RetrofitInstance.kt`.
+O `adb reverse` é perdido quando o emulador reinicia ou o cabo é reconectado, e então o comando precisa ser repetido.
 
 ## Testes
 
@@ -118,15 +136,16 @@ No Android Studio, também dá para clicar com o botão direito em `CatalogSearc
 ## Segurança
 
 - A senha é enviada à API apenas no cadastro e no login, e nunca é guardada no aparelho.
+- A comunicação com a API publicada usa HTTPS.
 - O token JWT fica no armazenamento privado do app (`SharedPreferences`) e o app o descarta quando expira.
 - Os logs de rede usam o nível `BASIC` e escondem o cabeçalho `Authorization`, para não expor senha nem token no Logcat.
-- O tráfego HTTP sem criptografia está liberado (`usesCleartextTraffic`) só para o desenvolvimento local. Ao publicar a API, use HTTPS e remova essa opção do `AndroidManifest.xml`.
+- O app só lê o catálogo. Cadastrar e apagar produtos exige um token de administrador, que só a API concede.
 
 ## Próximos passos
 
-- Publicar a API e o banco na nuvem e apontar o app para a URL pública.
 - Guardar o orçamento de cada usuário no servidor.
 - Guardar o token com o Android Keystore.
+- Separar a URL da API por tipo de build (debug e release).
 
 ## Autor
 
